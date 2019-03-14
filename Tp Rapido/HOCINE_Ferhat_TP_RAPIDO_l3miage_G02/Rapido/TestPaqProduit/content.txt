@@ -1,0 +1,2 @@
+!1 Tests du paquetage PAQ_PRODUIT
+!contents -R2 -g -p -f -h

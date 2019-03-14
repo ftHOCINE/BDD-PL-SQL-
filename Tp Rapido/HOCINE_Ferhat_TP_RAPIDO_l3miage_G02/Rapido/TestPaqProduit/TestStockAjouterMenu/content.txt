@@ -1,0 +1,83 @@
+!1 Différents tests de la procédure PACKAGE_STOCK.ajouter_PR_Menu
+!3 Déclenche PARAMETRE_INDEFINI (-20102) si l'un des paramètres vaut NULL
+!| Execute procedure expect exception | PACKAGE_STOCK.ajouter_PR_Menu | 20102 |
+| PRODUIT | MAG |
+| null | 123 |
+
+!| Execute procedure expect exception | PACKAGE_STOCK.ajouter_PR_Menu | 20102 |
+| PRODUIT | MAG |
+| 123 | null |
+
+
+!3 Déclenche PRODUIT_INCONNU (-20103) si ce produit n'existe pas
+On essaie avec une ref qui n'existe pas dans FF_PRODUIT
+
+!|Execute procedure|PAQ_PRODUITS.ajouter_menu|
+|le_nom|le_prix|la_taille|la_promo|
+|menu césar 1|4.5|petit|bidule|
+
+!|execute|insert into ff_produit values (189,'ffantaa',12,'petit')|
+
+!|execute|insert into ff_simple values (189,'boisson')|
+
+!|execute|insert into ff_menu values (189,'promo')|
+
+!|execute|insert into FF_MAGASIN values (19,'llidll','lille')|
+
+!| Query | select max(m_ref)+1 as r from FF_Menu |
+| r? |
+| >>r |
+
+!| Query | select max(m_ref) as m from ff_magasin |
+| m? |
+| >>m |
+
+| Execute procedure expect exception | PACKAGE_STOCK.ajouter_PR_Menu | 20103 |
+| PRODUIT | MAG |
+| <<r | <<m |
+
+!3 Déclenche PRODUIT_INCONNU (-20111) si ce magasin n'existe pas
+On essaie avec une ref qui n'existe pas dans FF_PRODUIT
+
+!| Query | select max(M_REF)+1 as ref_m from FF_MAGASIN |
+| ref_m? |
+| >>ref_m |
+
+!|Execute procedure|PAQ_PRODUITS.ajouter_menu|
+|le_nom|le_prix|la_taille|la_promo|
+|men|4.5|petit|bidule|
+
+!| Query | select max(m_ref) as r from FF_Menu |
+| r? |
+| >>r |
+
+!| Execute procedure expect exception | PACKAGE_STOCK.ajouter_PR_Menu | 20111 |
+| PRODUIT | MAG |
+| <<r | <<ref_m |
+
+
+!3 vérifie l'ajout
+
+!| Query | select count(*) as nb from stock |
+| nb? |
+| >>nb |
+
+!| Query | select max(m_REF) as re from FF_menu |
+| re? |
+| >>re |
+
+!| Query | select max(m_REF) as m from FF_MAGASIN |
+| m? |
+| >>m |
+
+!| Query | select count(REF_MENU) as nbr_pro from FF_CONSTITUE where REF_MENU=:re |
+| nbr_pro? |
+| >>nbr_pro |
+
+!| Execute procedure | PACKAGE_STOCK.ajouter_PR_Menu|
+| PRODUIT | Mag |
+| <<re |<<m |
+
+!| Query | select count(*)+:nbr_pro as nba from stock |
+| nba? |
+| <<nb |

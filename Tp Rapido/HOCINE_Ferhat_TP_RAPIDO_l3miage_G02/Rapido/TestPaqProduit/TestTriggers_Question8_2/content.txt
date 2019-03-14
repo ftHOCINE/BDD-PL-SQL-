@@ -1,0 +1,27 @@
+!1 Différents tests de la procédure PAQ_PRODUITS.supprimer_simple
+
+!3 Déclenche QUANTITE_NULL (-20112)
+
+!|execute|insert into ff_produit values (947,'ffanta',12,'petit')|
+
+!|execute|insert into ff_simple values (947,'boisson')|
+
+!|execute|insert into FF_MAGASIN values (991,'llidl','lille')|
+
+!|Execute procedure |PACKAGE_STOCK.changer_Quantite_STOCK|
+|PRODUIT|MAG|nb|
+|947|991|1|
+
+!|execute|insert into ff_consommation values(sysdate ,947,991)|
+
+!|Query|select ESTAMPILLE as nb1 from FF_CONSOMMATION |
+|nb1?|
+|>>nb1|
+
+!|Query|select s_nb as nb1s from STOCK |
+|nb1s?|
+|>>nb1s|
+
+!|Execute procedure expect exception|CONSO|20112|
+|DAT|PRODUIT|MAG|
+|<<nb1|947|991|

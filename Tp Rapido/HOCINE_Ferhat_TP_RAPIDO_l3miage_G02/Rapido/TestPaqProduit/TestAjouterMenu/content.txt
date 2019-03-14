@@ -1,0 +1,49 @@
+!1 Différents tests de la procédure PAQ_PRODUITS.ajouter_menu
+
+!3 Déclenche PARAMETRE_INDEFINI (-20102) si l'un des paramètres vaut NULL
+!|Execute procedure expect exception|PAQ_PRODUITS.ajouter_menu|20102|
+|le_nom|le_prix|la_taille|la_promo|
+|null|4.5|petit|bidule|
+
+!|Execute procedure expect exception|PAQ_PRODUITS.ajouter_menu|20102|
+|le_nom|le_prix|la_taille|la_promo|
+|toto|null|petit|bidule|
+
+!|Execute procedure expect exception|PAQ_PRODUITS.ajouter_menu|20102|
+|le_nom|le_prix|la_taille|la_promo|
+|toto|4.5|null|bidule|
+
+!|Execute procedure expect exception|PAQ_PRODUITS.ajouter_menu|20102|
+|le_nom|le_prix|la_taille|la_promo|
+|toto|4.5|petit|null|
+
+!3 Déclenche PB_VALEUR_TAILLE (-20107) si la taille n'est pas correcte
+!|Execute procedure expect exception|PAQ_PRODUITS.ajouter_menu|20107|
+|le_nom|le_prix|la_taille|la_promo|
+|toto|4.5|tiote|bidule|
+
+!3 Déclenche PRIX_NON_POSITIF (-20106) si le prix est négatif ou nul
+!|Execute procedure expect exception|PAQ_PRODUITS.ajouter_menu|20106|
+|le_nom|le_prix|la_taille|la_promo|
+|toto|0|petit|bidule|
+
+!|Execute procedure expect exception|PAQ_PRODUITS.ajouter_menu|20106|
+|le_nom|le_prix|la_taille|la_promo|
+|toto|-1.5|petit|bidule|
+
+!3 On teste dans le cas où il n'y a pas d'erreur dans les valeurs des paramètres
+
+!|Execute procedure|PAQ_PRODUITS.ajouter_menu|
+|le_nom|le_prix|la_taille|la_promo|
+|menu césar 1|4.5|petit|bidule|
+
+On vérifie:
+!|Query| select * from FF_PRODUIT join FF_MENU on FF_PRODUIT.p_ref = FF_MENU.m_ref where nom='menu césar 1'|
+|nom|prix|taille|promo|
+|menu césar 1|4.5|petit|bidule|
+
+!3 Déclenche DOUBLON_NOM_PRODUIT (-20109) si on met un produit dont le nom existe déjà dans la table FF_PRODUIT
+!|Execute procedure expect exception|PAQ_PRODUITS.ajouter_menu|20109|
+|le_nom|le_prix|la_taille|la_promo|
+|menu césar 1|6.5|grand|bidule|
+

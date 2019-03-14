@@ -1,0 +1,25 @@
+!1 Différents tests du trigger TRIGGER1_QUESTION6_1
+
+!3 vérifie que ca marche
+
+!|execute|insert into ff_produit values (947,'ffanta',12,'petit')|
+
+!|execute|insert into ff_simple values (947,'boisson')|
+
+!|execute|insert into FF_MAGASIN values (991,'llidl','lille')|
+
+!|Execute procedure |PACKAGE_STOCK.changer_Quantite_STOCK|
+|PRODUIT|MAG|nb|
+|947|991|3|
+
+!|Query|select S_NB as nbr from STOCK where S_REF= 947 AND M_REF=991 |
+|nbr?|
+|>>nbr|
+
+!|execute|insert into ff_consommation values(sysdate ,947,991)|
+
+!|Query|select S_NB+1 as nbrr from STOCK where S_REF= 947 AND M_REF=991 |
+|nbrr?|
+|<<nbr|
+
+j'ai selectionner S_NB+1 car l'ajout a consommation diminue le stock et donc c'est pour avoir le meme nombre vu que j'ai ajouter que une fois a consommation

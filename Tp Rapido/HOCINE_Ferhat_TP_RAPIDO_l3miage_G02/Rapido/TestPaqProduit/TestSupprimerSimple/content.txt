@@ -1,0 +1,63 @@
+!1 Différents tests de la procédure PAQ_PRODUITS.supprimer_simple
+
+!3 Déclenche PARAMETRE_INDEFINI (-20102) si le paramètre vaut NULL
+!|Execute procedure expect exception|PAQ_PRODUITS.supprimer_simple|20102|
+|la_ref|
+|null|
+
+!3 Déclenche PRODUIT_INCONNU (-20103) si ce produit simple n'existe pas
+
+On essaie avec une ref de menu
+On s'assure qu'il y a au moins un menu
+!|Query|select gen_clef.nextval as ref_menu from dual|
+|ref_menu?|
+|>>ref_menu|
+
+!|execute|insert into FF_PRODUIT(p_ref,nom,prix,taille) values(:ref_menu,'menu césar 1',4.5,'petit')|
+!|execute|insert into FF_MENU(m_ref,promo) values(:ref_menu,'bidule')|
+
+!|Execute procedure expect exception|PAQ_PRODUITS.supprimer_simple|20103|
+|la_ref|
+|<<ref_menu|
+
+On essaie avec une ref qui n'existe pas dans FF_PRODUIT
+!|Query|select max(p_ref)+1 as ref_prod from FF_PRODUIT|
+|ref_prod?|
+|>>ref_prod|
+
+!|Execute procedure expect exception|PAQ_PRODUITS.supprimer_simple|20103|
+|la_ref|
+|<<ref_prod|
+
+!3 Déclenche PRODUIT_UTILISE (-20110) si ce produit entre dans la composition d'un menu
+
+On s'assure qu'il y a un produit simple qui entre dans la composition d'un menu
+!|Query|select gen_clef.nextval as ref_simple from dual|
+|ref_simple?|
+|>>ref_simple|
+
+!|execute|insert into FF_PRODUIT(p_ref,nom,prix,taille) values (:ref_simple,'césar1',1.5,'petit')|
+!|execute|insert into FF_SIMPLE(s_ref,categ) values(:ref_simple,'salade')|
+
+On met le produit simple dans le menu créé précédemment
+!|execute|insert into FF_CONSTITUE(ref_simple,ref_menu) values (:ref_simple, :ref_menu)|
+
+!|Execute procedure expect exception|PAQ_PRODUITS.supprimer_simple|20110|
+|la_ref|
+|<<ref_simple|
+
+!3 On vérifie qu'un produit simple qui n'entre pas dans la composition d'un menu est bien supprimé par la procédure
+
+!|execute|delete from FF_CONSTITUE where ref_simple=:ref_simple and ref_menu=:ref_menu|
+
+!|Execute procedure|PAQ_PRODUITS.supprimer_simple|
+|la_ref|
+|<<ref_simple|
+
+!|Query|select count(p_ref) as nb from FF_PRODUIT where nom = 'césar1'|
+|nb|
+|0|
+
+!|Query|select count(s_ref) as nb from FF_SIMPLE where s_ref=:ref_simple|
+|nb|
+|0|

@@ -1,0 +1,54 @@
+!1 Différents tests de la procédure PAQ_PRODUITS.ajouter_simple
+
+!3 Déclenche PARAMETRE_INDEFINI (-20102) si l'un des paramètres vaut NULL
+!|Execute procedure expect exception|PAQ_PRODUITS.ajouter_simple|20102|
+|le_nom|le_prix|la_taille|la_categ|
+|null|4.5|petit|salade|
+
+!|Execute procedure expect exception|PAQ_PRODUITS.ajouter_simple|20102|
+|le_nom|le_prix|la_taille|la_categ|
+|toto|null|petit|salade|
+
+!|Execute procedure expect exception|PAQ_PRODUITS.ajouter_simple|20102|
+|le_nom|le_prix|la_taille|la_categ|
+|toto|4.5|null|salade|
+
+!|Execute procedure expect exception|PAQ_PRODUITS.ajouter_simple|20102|
+|le_nom|le_prix|la_taille|la_categ|
+|toto|4.5|petit|null|
+
+!3 Déclenche PB_VALEUR_TAILLE (-20107) si la taille n'est pas correcte
+!|Execute procedure expect exception|PAQ_PRODUITS.ajouter_simple|20107|
+|le_nom|le_prix|la_taille|la_categ|
+|toto|4.5|tiote|salade|
+
+!3 Déclenche PRIX_NON_POSITIF (-20106) si le prix est négatif ou nul
+!|Execute procedure expect exception|PAQ_PRODUITS.ajouter_simple|20106|
+|le_nom|le_prix|la_taille|la_categ|
+|toto|0|petit|salade|
+
+!|Execute procedure expect exception|PAQ_PRODUITS.ajouter_simple|20106|
+|le_nom|le_prix|la_taille|la_categ|
+|toto|-1.5|petit|salade|
+
+!3 Déclenche PB_VALEUR_CATEGORIE (-20108) si la catégorie n'est pas correcte
+!|Execute procedure expect exception|PAQ_PRODUITS.ajouter_simple|20108|
+|le_nom|le_prix|la_taille|la_categ|
+|toto|4.5|petit|bizarre|
+
+!3 On teste dans le cas où il n'y a pas d'erreur dans les valeurs des paramètres
+
+!|Execute procedure|PAQ_PRODUITS.ajouter_simple|
+|le_nom|le_prix|la_taille|la_categ|
+|césar1|1.5|petit|salade|
+
+On vérifie:
+!|Query| select * from FF_PRODUIT join FF_SIMPLE on FF_PRODUIT.p_ref = FF_SIMPLE.s_ref where nom='césar1'|
+|nom|prix|taille|categ|
+|césar1|1.5|petit|salade|
+
+!3 Déclenche DOUBLON_NOM_PRODUIT (-20109) si on met un produit dont le nom existe déjà dans la table FF_PRODUIT
+!|Execute procedure expect exception|PAQ_PRODUITS.ajouter_simple|20109|
+|le_nom|le_prix|la_taille|la_categ|
+|césar1|2.5|grand|salade|
+

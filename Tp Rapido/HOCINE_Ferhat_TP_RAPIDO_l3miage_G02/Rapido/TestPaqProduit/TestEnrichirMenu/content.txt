@@ -1,0 +1,89 @@
+!1 Différents tests de la procédure PAQ_PRODUITS.enrichir_menu
+
+!3 Déclenche PARAMETRE_INDEFINI (-20102) si l'un des paramètres vaut NULL
+!|Execute procedure expect exception|PAQ_PRODUITS.enrichir_menu|20102|
+|la_ref_menu|la_ref_simple|
+|null|50|
+
+!|Execute procedure expect exception|PAQ_PRODUITS.enrichir_menu|20102|
+|la_ref_menu|la_ref_simple|
+|50|null|
+
+!3 Déclenche INCOHERENCE_TAILLES (-20104) si le menu et le simple n'ont pas la même taille
+
+On s'assure qu'il y a au moins un menu
+!|Query|select gen_clef.nextval as ref_menu from dual|
+|ref_menu?|
+|>>ref_menu|
+
+!|execute|insert into FF_PRODUIT(p_ref,nom,prix,taille) values(:ref_menu,'nom menu',4.5,'moyen')|
+!|execute|insert into FF_MENU(m_ref,promo) values(:ref_menu,'bidule')|
+
+On s'assure qu'il y a au moins un produit simple d'une autre taille
+!|Query|select gen_clef.nextval as ref_simple from dual|
+|ref_simple?|
+|>>ref_simple|
+
+!|execute|insert into FF_PRODUIT(p_ref,nom,prix,taille) values (:ref_simple,'le prod',1.5,'petit')|
+!|execute|insert into FF_SIMPLE(s_ref,categ) values(:ref_simple,'salade')|
+
+On essaie de mettre ce produit simple dans ce menu
+!|Execute procedure expect exception|PAQ_PRODUITS.enrichir_menu|20104|
+|la_ref_menu|la_ref_simple|
+|<<ref_menu|<<ref_simple|
+
+!3 On déclenche PRODUIT_INCONNU (-20103) si le menu ou le simple n'existe pas.
+
+!|Query|select max(p_ref)+1 as nouveau from FF_PRODUIT|
+|nouveau?|
+|>>nouveau|
+
+on essaie avec un menu inconnu
+!|Execute procedure expect exception|PAQ_PRODUITS.enrichir_menu|20103|
+|la_ref_menu|la_ref_simple|
+|<<nouveau|<<ref_simple|
+
+on essaie avec un produit simple inconnu
+!|Execute procedure expect exception|PAQ_PRODUITS.enrichir_menu|20103|
+|la_ref_menu|la_ref_simple|
+|<<ref_menu|<<nouveau|
+
+!3 on teste un cas où ça marche bien
+on change la taille du menu precedent
+!|execute|update FF_PRODUIT set taille='petit' where p_ref=:ref_menu|
+on ajoute le produit simple au menu
+!|Execute procedure|PAQ_PRODUITS.enrichir_menu|
+|la_ref_menu|la_ref_simple|
+|<<ref_menu|<<ref_simple|
+
+on vérifie que ça a marché :
+!|query|select count(*) as nb from FF_CONSTITUE where ref_menu=:ref_menu and ref_simple=:ref_simple|
+|nb|
+|1|
+
+
+!3 on vérifie que si on veut mettre un produit simple deja present dans ce menu, ça ne declenche pas d'erreur
+
+!|Query|select gen_clef.nextval as ref_mm from dual|
+|ref_mm?|
+|>>ref_mm|
+
+!|Query|select gen_clef.nextval as ref_pp from dual|
+|ref_pp?|
+|>>ref_pp|
+
+!|execute|insert into FF_PRODUIT(p_ref,nom,prix,taille) values(:ref_mm,'mm 1',55,'moyen')|
+!|execute|insert into FF_MENU(m_ref,promo) values(:ref_mm,'bidule')|
+
+!|execute|insert into FF_PRODUIT(p_ref,nom,prix,taille) values (:ref_pp,'m prod 1',10,'moyen')|
+!|execute|insert into FF_SIMPLE(s_ref,categ) values(:ref_pp,'boisson')|
+
+
+!|Execute procedure|PAQ_PRODUITS.enrichir_menu|
+|la_ref_menu|la_ref_simple|
+|<<ref_mm|<<ref_pp|
+
+
+!|Execute procedure|PAQ_PRODUITS.enrichir_menu|
+|la_ref_menu|la_ref_simple|
+|<<ref_mm|<<ref_pp|

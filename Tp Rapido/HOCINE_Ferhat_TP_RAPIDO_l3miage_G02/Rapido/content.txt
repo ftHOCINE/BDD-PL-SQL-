@@ -1,0 +1,2 @@
+!path lib/*.jar
+!contents -R2 -g -p -f -h

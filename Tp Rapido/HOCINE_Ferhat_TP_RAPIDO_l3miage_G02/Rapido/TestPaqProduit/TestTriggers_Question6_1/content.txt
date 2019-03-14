@@ -1,0 +1,30 @@
+!1 Différents tests du trigger TRIGGER1_QUESTION6_1
+
+!3 vérifie que ca marche
+
+!|execute|insert into FF_MAGASIN values (199,'lleclerc','lille')|
+
+!| Query | select count(s_ref) as nb from stock |
+| nb? |
+| >>nb |
+
+!| Query | select count(s_REF) as reaz from FF_simple |
+| reaz? |
+| >>reaz |
+
+!| Query | select count(m_REF) as maz from FF_MAGASIN |
+| maz? |
+| >>maz |
+
+!|execute|insert into ff_produit values (912,'ccocaa',15,'petit')|
+
+!|execute|insert into ff_simple values (912,'boisson')|
+
+
+!| Query | select count(*)-(:maz) as nba from stock |
+| nba? |
+| <<nb |
+
+
+
+

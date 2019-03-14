@@ -1,0 +1,46 @@
+!1 Différents tests de la procédure PAQ_PRODUITS.appauvrir_menu
+
+On s'assure qu'il y a au moins un menu
+!|Query|select gen_clef.nextval as ref_menu from dual|
+|ref_menu?|
+|>>ref_menu|
+
+!|execute|insert into FF_PRODUIT(p_ref,nom,prix,taille) values(:ref_menu,'nom menu',4.5,'petit')|
+!|execute|insert into FF_MENU(m_ref,promo) values(:ref_menu,'bidule')|
+
+On s'assure qu'il y a au moins un produit simple 
+!|Query|select gen_clef.nextval as ref_simple from dual|
+|ref_simple?|
+|>>ref_simple|
+
+!|execute|insert into FF_PRODUIT(p_ref,nom,prix,taille) values (:ref_simple,'le prod',1.5,'petit')|
+!|execute|insert into FF_SIMPLE(s_ref,categ) values(:ref_simple,'salade')|
+
+
+!3 Déclenche PARAMETRE_INDEFINI (-20102) si l'un des paramètres vaut NULL
+!|Execute procedure expect exception|PAQ_PRODUITS.appauvrir_menu|20102|
+|la_ref_menu|la_ref_simple|
+|null|50|
+
+!|Execute procedure expect exception|PAQ_PRODUITS.appauvrir_menu|20102|
+|la_ref_menu|la_ref_simple|
+|50|null|
+
+!3 Déclenche PB_COMPOSITION (-20105) si ce produit simple n'est pas dans ce menu.
+
+!|Execute procedure expect exception|PAQ_PRODUITS.appauvrir_menu|20105|
+|la_ref_menu|la_ref_simple|
+|<<ref_menu|<<ref_simple|
+
+!3 ça se passe bien quand ce produit simple est bien dans ce menu
+!|execute|insert into FF_CONSTITUE(ref_menu,ref_simple) values(:ref_menu,:ref_simple)|
+
+!|Execute procedure|PAQ_PRODUITS.appauvrir_menu|
+|la_ref_menu|la_ref_simple|
+|<<ref_menu|<<ref_simple|
+
+!|Query|select count(*) as nb from FF_CONSTITUE where ref_menu=:ref_menu and ref_simple=:ref_simple|
+|nb|
+|0|
+
+

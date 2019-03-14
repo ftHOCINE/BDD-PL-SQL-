@@ -1,0 +1,7 @@
+# page SetUp
+!|dbfit.OracleTest|
+!|Connect|oracle.fil.univ-lille1.fr:1521|HOCINE|ENC(u6fHcl9VOgsGda7tlKHywQ==)|filora|
+
+
+
+

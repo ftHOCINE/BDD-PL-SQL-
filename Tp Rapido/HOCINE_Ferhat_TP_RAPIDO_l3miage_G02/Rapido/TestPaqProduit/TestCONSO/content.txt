@@ -1,0 +1,91 @@
+!1 Différents tests de la procédure CONSO
+!3 Déclenche PARAMETRE_INDEFINI (-20102) si l'un des paramètres vaut NULL
+
+!| Execute procedure expect exception | CONSO | 20102 |
+|DAT|PRODUIT|MAG|
+|null|123|null|
+
+!| Execute procedure expect exception | CONSO | 20102 |
+|DAT|PRODUIT|MAG|
+|null|null|123|
+
+!3 Déclenche PRODUIT_INCONNU (-20103) si ce produit n'existe pas
+
+!|execute|insert into ff_produit values (947,'ffanta',12,'petit')|
+
+!|execute|insert into ff_simple values (947,'boisson')|
+
+!|execute|insert into FF_MAGASIN values (991,'llidl','lille')|
+
+!|Execute procedure |PACKAGE_STOCK.changer_Quantite_STOCK|
+|PRODUIT|MAG|nb|
+|947|991|3|
+
+!|execute|insert into ff_consommation values(sysdate ,947,991)|
+
+
+On essaie avec une ref qui n'existe pas dans FF_PRODUIT
+!|Query|select max(p_ref)+1 as ref_prod from FF_PRODUIT|
+|ref_prod?|
+|>>ref_prod|
+
+!|Query|select max(ESTAMPILLE) as da from FF_CONSOMMATION |
+|da?|
+|>>da|
+
+!|Query|select max(m_ref) as fr from FF_magasin |
+|fr?|
+|>>fr|
+
+!|Execute procedure expect exception|CONSO|20103|
+|DAT|PRODUIT|MAG|
+|<<da|<<ref_prod|<<fr|
+!3 Déclenche PRODUIT_INCONNU (-20103) si ce magasin n'existe pas
+
+On essaie avec une ref qui n'existe pas dans FF_PRODUIT
+!|Query|select max(M_REF)+1 as ref_m from FF_MAGASIN|
+|ref_m?|
+|>>ref_m|
+
+
+!|Query|select max(ESTAMPILLE) as da from FF_CONSOMMATION|
+|da?|
+|>>da|
+
+!|Query|select max(p_ref) as pr from ff_produit|
+|pr?|
+|>>pr|
+
+!|Execute procedure expect exception|CONSO|20103|
+|DAT|PRODUIT|MAG|
+|<<da|<<pr|<<ref_m|
+
+!3 On teste dans le cas où il n'y a pas d'erreur dans les valeurs des paramètres
+
+
+
+!|Query|select count(*) as nb from FF_CONSOMMATION |
+|nb?|
+|>>nb|
+
+!|Query|select S_NB as nbr from STOCK where S_REF= 947 AND M_REF=991 |
+|nbr?|
+|>>nbr|
+
+!|Execute procedure |CONSO|
+|DAT|PRODUIT|MAG|
+|<<da|947|991|
+
+j'ai selectionné la nombre de ligne -1 
+!|Query|select count(*)-1 as nb1 from FF_CONSOMMATION |
+|nb1?|
+|<<nb|
+
+
+!|Query|select S_NB+1 as nbr from STOCK where S_REF= 947 AND M_REF=991 |
+|nbr?|
+|<<nbr|
+
+
+
+
